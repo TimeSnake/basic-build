@@ -1,0 +1,11 @@
+main: de.timesnake.extension.build.main.ExBuild
+version: 1.0
+name: extension-build
+author: Mn
+depend: [ basic-bukkit ]
+api-version: 1.13
+
+commands:
+  map:
+  pvp:
+     
