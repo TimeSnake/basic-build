@@ -7,17 +7,23 @@ import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
 import de.timesnake.basic.bukkit.util.user.User;
 import de.timesnake.basic.bukkit.util.world.ExLocation;
+import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.object.DbLocation;
+import de.timesnake.database.util.server.DbTempGameServer;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
-public class MapLocationCmd implements CommandListener {
+public class MapCmd implements CommandListener {
 
     enum Type {
         BLOCK("block"), MIDDLE("middle"), EXACT("exact"), BLOCK_FACING("block_facing"), MIDDLE_FACING("middle_facing"), EXACT_FACING("exact_facing"), EXACT_EXACT_FACING("exact_exact_facing");
@@ -90,6 +96,53 @@ public class MapLocationCmd implements CommandListener {
 
         DbMap map = game.getMap(mapName);
 
+        if (!args.isLengthHigherEquals(3, true)) {
+            return;
+        }
+
+        switch (args.getString(2).toLowerCase()) {
+            case "add", "set" -> this.handleLocationCmd(sender, user, args, game, map);
+            case "update" -> this.handleUpdateCmd(sender, user, game, map);
+        }
+
+    }
+
+    private void handleUpdateCmd(Sender sender, User user, DbGame game, DbMap map) {
+        String worldName = map.getWorldName();
+        ExWorld world = Server.getWorld(worldName);
+
+        if (world == null) {
+            sender.sendPluginMessage(ChatColor.WARNING + "World " + ChatColor.VALUE + worldName + ChatColor.WARNING + " not found");
+            return;
+        }
+
+        File worldFolder = world.getWorldFolder();
+
+        Collection<DbTempGameServer> servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME, game.getName());
+        List<File> serverWorldFolders = new LinkedList<>();
+
+        for (DbTempGameServer server : servers) {
+            if (!server.getStatus().equals(Status.Server.OFFLINE)) {
+                sender.sendPluginMessage(ChatColor.WARNING + "Stop all game servers before copying");
+                return;
+            }
+
+            serverWorldFolders.add(new File(server.getFolderPath() + File.separator + worldName));
+        }
+
+        Server.getWorldManager().unloadWorld(world, true);
+
+        for (File serverFolder : serverWorldFolders) {
+            Server.getWorldManager().copyWorldFolderFiles(worldFolder, serverFolder);
+        }
+
+        Server.getWorldManager().createWorld(worldName);
+
+        sender.sendPluginMessage(ChatColor.PERSONAL + "Updated world " + ChatColor.VALUE + worldName + ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName());
+
+    }
+
+    private void handleLocationCmd(Sender sender, User user, Arguments<Argument> args, DbGame game, DbMap map) {
         if (!args.isLengthHigherEquals(5, true)) {
             return;
         }
@@ -113,38 +166,21 @@ public class MapLocationCmd implements CommandListener {
             case "set":
                 ExLocation loc = user.getExLocation();
 
-                DbLocation dbLoc = null;
-
-                switch (type) {
-                    case BLOCK:
-                        dbLoc = Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
-                        break;
-                    case BLOCK_FACING:
-                        dbLoc = Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
-                        break;
-                    case EXACT:
-                        dbLoc = Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
-                        break;
-                    case EXACT_FACING:
-                        dbLoc = Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
-                        break;
-                    case EXACT_EXACT_FACING:
-                        dbLoc = user.getDbLocation();
-                        break;
-                    case MIDDLE:
-                        dbLoc = Server.getDbLocationFromLocation(loc.middleBlock().zeroFacing());
-                        break;
-                    case MIDDLE_FACING:
-                        dbLoc = Server.getDbLocationFromLocation(loc.middleBlock().roundFacing());
-                        break;
-                }
+                DbLocation dbLoc = switch (type) {
+                    case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
+                    case BLOCK_FACING -> Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
+                    case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
+                    case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
+                    case EXACT_EXACT_FACING -> user.getDbLocation();
+                    case MIDDLE -> Server.getDbLocationFromLocation(loc.middleBlock().zeroFacing());
+                    case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleBlock().roundFacing());
+                };
 
                 map.addLocation(number, dbLoc);
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Added location " + number + " to map " + mapName);
+                sender.sendPluginMessage(ChatColor.PERSONAL + "Added location " + number + " to map " + map.getName());
 
                 break;
         }
-
     }
 
     @Override
@@ -152,7 +188,7 @@ public class MapLocationCmd implements CommandListener {
         if (args.getLength() == 4) {
             return Type.getNames();
         } else if (args.getLength() == 3) {
-            return List.of("add", "set");
+            return List.of("add", "set", "update");
         } else if (args.getLength() == 2) {
             return Server.getCommandManager().getTabCompleter().getMapNames(args.getString(0));
         } else if (args.getLength() == 1) {
