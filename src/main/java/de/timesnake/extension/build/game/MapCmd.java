@@ -12,7 +12,7 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.object.DbLocation;
-import de.timesnake.database.util.server.DbTempGameServer;
+import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -118,10 +118,17 @@ public class MapCmd implements CommandListener {
 
         File worldFolder = world.getWorldFolder();
 
-        Collection<DbTempGameServer> servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME, game.getName());
+        Collection<? extends DbServer> servers;
+
+        if (game.isTemporary()) {
+            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME, game.getName());
+        } else {
+            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.GAME, game.getName());
+        }
+
         List<File> serverWorldFolders = new LinkedList<>();
 
-        for (DbTempGameServer server : servers) {
+        for (DbServer server : servers) {
             if (!server.getStatus().equals(Status.Server.OFFLINE)) {
                 sender.sendPluginMessage(ChatColor.WARNING + "Stop all game servers before copying");
                 return;
@@ -133,6 +140,9 @@ public class MapCmd implements CommandListener {
         Server.getWorldManager().unloadWorld(world, true);
 
         for (File serverFolder : serverWorldFolders) {
+            if (serverFolder.exists()) {
+                serverFolder.delete();
+            }
             Server.getWorldManager().copyWorldFolderFiles(worldFolder, serverFolder);
         }
 
