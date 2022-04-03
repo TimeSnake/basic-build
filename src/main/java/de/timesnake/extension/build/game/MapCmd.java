@@ -14,48 +14,19 @@ import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 public class MapCmd implements CommandListener {
-
-    enum Type {
-        BLOCK("block"), MIDDLE("middle"), EXACT("exact"), BLOCK_FACING("block_facing"), MIDDLE_FACING("middle_facing"), EXACT_FACING("exact_facing"), EXACT_EXACT_FACING("exact_exact_facing");
-
-        private final String name;
-
-        Type(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public static Type fromString(String typeString) {
-            for (Type type : Type.values()) {
-                if (type.getName().equalsIgnoreCase(typeString)) {
-                    return type;
-                }
-            }
-            return null;
-        }
-
-        public static List<String> getNames() {
-            List<String> names = new ArrayList<>();
-            for (Type type : Type.values()) {
-                names.add(type.getName());
-            }
-            return names;
-        }
-    }
-
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
@@ -102,12 +73,12 @@ public class MapCmd implements CommandListener {
 
         switch (args.getString(2).toLowerCase()) {
             case "add", "set" -> this.handleLocationCmd(sender, user, args, game, map);
-            case "update" -> this.handleUpdateCmd(sender, user, game, map);
+            case "update" -> this.handleUpdateCmd(sender, game, map);
         }
 
     }
 
-    private void handleUpdateCmd(Sender sender, User user, DbGame game, DbMap map) {
+    private void handleUpdateCmd(Sender sender, DbGame game, DbMap map) {
         String worldName = map.getWorldName();
         ExWorld world = Server.getWorld(worldName);
 
@@ -121,12 +92,16 @@ public class MapCmd implements CommandListener {
         Collection<? extends DbServer> servers;
 
         if (game.isTemporary()) {
-            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME, game.getName());
+            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME,
+                    game.getName());
         } else {
-            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.GAME, game.getName());
+            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.GAME,
+                    game.getName());
         }
 
         List<File> serverWorldFolders = new LinkedList<>();
+
+        List<String> serverNames = new LinkedList<>();
 
         for (DbServer server : servers) {
             if (!server.getStatus().equals(Status.Server.OFFLINE)) {
@@ -135,21 +110,66 @@ public class MapCmd implements CommandListener {
             }
 
             serverWorldFolders.add(new File(server.getFolderPath() + File.separator + worldName));
+            serverNames.add(server.getName());
         }
 
         Server.getWorldManager().unloadWorld(world, true);
 
         for (File serverFolder : serverWorldFolders) {
             if (serverFolder.exists()) {
-                serverFolder.delete();
+                try {
+                    FileUtils.deleteDirectory(serverFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             Server.getWorldManager().copyWorldFolderFiles(worldFolder, serverFolder);
         }
 
         Server.getWorldManager().createWorld(worldName);
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Updated world " + ChatColor.VALUE + worldName + ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName());
+        sender.sendPluginMessage(ChatColor.PERSONAL + "Updated world " + ChatColor.VALUE + worldName +
+                ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName() + ChatColor.PERSONAL + " on " +
+                "servers " +
+                ChatColor.VALUE + Chat.listToString(serverNames));
 
+    }
+
+    enum Type {
+        BLOCK("block"),
+        MIDDLE("middle"),
+        EXACT("exact"),
+        BLOCK_FACING("block_facing"),
+        MIDDLE_FACING("middle_facing"),
+        EXACT_FACING("exact_facing"),
+        EXACT_EXACT_FACING("exact_exact_facing");
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public static Type fromString(String typeString) {
+            for (Type type : Type.values()) {
+                if (type.getName().equalsIgnoreCase(typeString)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        public static List<String> getNames() {
+            List<String> names = new ArrayList<>();
+            for (Type type : Type.values()) {
+                names.add(type.getName());
+            }
+            return names;
+        }
     }
 
     private void handleLocationCmd(Sender sender, User user, Arguments<Argument> args, DbGame game, DbMap map) {
