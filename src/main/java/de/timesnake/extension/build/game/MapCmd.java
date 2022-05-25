@@ -135,43 +135,6 @@ public class MapCmd implements CommandListener {
 
     }
 
-    enum Type {
-        BLOCK("block"),
-        MIDDLE("middle"),
-        EXACT("exact"),
-        BLOCK_FACING("block_facing"),
-        MIDDLE_FACING("middle_facing"),
-        EXACT_FACING("exact_facing"),
-        EXACT_EXACT_FACING("exact_exact_facing");
-
-        private final String name;
-
-        Type(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public static Type fromString(String typeString) {
-            for (Type type : Type.values()) {
-                if (type.getName().equalsIgnoreCase(typeString)) {
-                    return type;
-                }
-            }
-            return null;
-        }
-
-        public static List<String> getNames() {
-            List<String> names = new ArrayList<>();
-            for (Type type : Type.values()) {
-                names.add(type.getName());
-            }
-            return names;
-        }
-    }
-
     private void handleLocationCmd(Sender sender, User user, Arguments<Argument> args, DbGame game, DbMap map) {
         if (!args.isLengthHigherEquals(5, true)) {
             return;
@@ -198,7 +161,8 @@ public class MapCmd implements CommandListener {
 
                 DbLocation dbLoc = switch (type) {
                     case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
-                    case BLOCK_FACING -> Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
+                    case BLOCK_FACING ->
+                            Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
                     case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
                     case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
                     case EXACT_EXACT_FACING -> user.getDbLocation();
@@ -227,5 +191,42 @@ public class MapCmd implements CommandListener {
             return List.of("0", "1", "2", "3");
         }
         return List.of();
+    }
+
+    enum Type {
+        BLOCK("block"),
+        MIDDLE("middle"),
+        EXACT("exact"),
+        BLOCK_FACING("block_facing"),
+        MIDDLE_FACING("middle_facing"),
+        EXACT_FACING("exact_facing"),
+        EXACT_EXACT_FACING("exact_exact_facing");
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+
+        public static Type fromString(String typeString) {
+            for (Type type : Type.values()) {
+                if (type.getName().equalsIgnoreCase(typeString)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        public static List<String> getNames() {
+            List<String> names = new ArrayList<>();
+            for (Type type : Type.values()) {
+                names.add(type.getName());
+            }
+            return names;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }
