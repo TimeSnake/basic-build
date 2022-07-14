@@ -11,6 +11,7 @@ import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
+import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -93,9 +94,9 @@ public class MapCmd implements CommandListener {
         Server.getWorldManager().unloadWorld(world, true);
 
         String gameType;
-        String gameName = game.getName();
+        String gameName = game.getInfo().getName();
 
-        if (game.isTemporary()) {
+        if (game instanceof DbTmpGame) {
             gameType = "tempgame";
         } else {
             gameType = "game";
