@@ -12,9 +12,6 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.object.DbLocation;
-import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import org.apache.commons.io.FileUtils;
@@ -22,11 +19,15 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 public class MapCmd implements CommandListener {
+
+    private final File templateWorldDir;
+
+    public MapCmd(File templateDir) {
+        this.templateWorldDir = new File(templateDir.getAbsolutePath() + File.separator + "worlds");
+    }
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
@@ -87,51 +88,33 @@ public class MapCmd implements CommandListener {
             return;
         }
 
-        File worldFolder = world.getWorldFolder();
-
-        Collection<? extends DbServer> servers;
-
-        if (game.isTemporary()) {
-            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.TEMP_GAME,
-                    game.getName());
-        } else {
-            servers = Database.getServers().getServers(de.timesnake.database.util.object.Type.Server.GAME,
-                    game.getName());
-        }
-
-        List<File> serverWorldFolders = new LinkedList<>();
-
-        List<String> serverNames = new LinkedList<>();
-
-        for (DbServer server : servers) {
-            if (!server.getStatus().equals(Status.Server.OFFLINE)) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Stop all game servers before copying");
-                return;
-            }
-
-            serverWorldFolders.add(new File(server.getFolderPath() + File.separator + worldName));
-            serverNames.add(server.getName());
-        }
+        File worldDirectory = world.getWorldFolder();
 
         Server.getWorldManager().unloadWorld(world, true);
 
-        for (File serverFolder : serverWorldFolders) {
-            if (serverFolder.exists()) {
-                try {
-                    FileUtils.deleteDirectory(serverFolder);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            Server.getWorldManager().copyWorldFolderFiles(worldFolder, serverFolder);
+        String gameType;
+        String gameName = game.getName();
+
+        if (game.isTemporary()) {
+            gameType = "tempgame";
+        } else {
+            gameType = "game";
         }
+
+        File worldTemplateDirectory = new File(this.templateWorldDir.getAbsolutePath() + File.separator + gameType +
+                File.separator + gameName + File.separator + worldName);
+
+        try {
+            FileUtils.deleteDirectory(worldTemplateDirectory);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Server.getWorldManager().copyWorldFolderFiles(worldDirectory, worldTemplateDirectory);
 
         Server.getWorldManager().createWorld(worldName);
 
         sender.sendPluginMessage(ChatColor.PERSONAL + "Updated world " + ChatColor.VALUE + worldName +
-                ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName() + ChatColor.PERSONAL + " on " +
-                "servers " +
-                ChatColor.VALUE + Chat.listToString(serverNames));
+                ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName());
 
     }
 
@@ -202,12 +185,6 @@ public class MapCmd implements CommandListener {
         EXACT_FACING("exact_facing"),
         EXACT_EXACT_FACING("exact_exact_facing");
 
-        private final String name;
-
-        Type(String name) {
-            this.name = name;
-        }
-
         public static Type fromString(String typeString) {
             for (Type type : Type.values()) {
                 if (type.getName().equalsIgnoreCase(typeString)) {
@@ -223,6 +200,12 @@ public class MapCmd implements CommandListener {
                 names.add(type.getName());
             }
             return names;
+        }
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
         }
 
         public String getName() {
