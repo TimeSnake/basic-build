@@ -1,4 +1,4 @@
-package de.timesnake.extension.build.game;
+package de.timesnake.extension.build.cmd;
 
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.chat.Argument;
@@ -13,6 +13,7 @@ import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
+import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import org.apache.commons.io.FileUtils;
@@ -74,8 +75,9 @@ public class MapCmd implements CommandListener {
         }
 
         switch (args.getString(2).toLowerCase()) {
-            case "add", "set" -> this.handleLocationCmd(sender, user, args, game, map);
+            case "add", "set" -> this.handleLocationCmd(sender, user, args, map);
             case "update" -> this.handleUpdateCmd(sender, game, map);
+            case "author" -> this.handleAuthorCmd(sender, args, map);
         }
 
     }
@@ -119,7 +121,7 @@ public class MapCmd implements CommandListener {
 
     }
 
-    private void handleLocationCmd(Sender sender, User user, Arguments<Argument> args, DbGame game, DbMap map) {
+    private void handleLocationCmd(Sender sender, User user, Arguments<Argument> args, DbMap map) {
         if (!args.isLengthHigherEquals(5, true)) {
             return;
         }
@@ -155,24 +157,54 @@ public class MapCmd implements CommandListener {
                 };
 
                 map.addLocation(number, dbLoc);
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Added location " + number + " to map " + map.getName());
+                sender.sendPluginMessage(ChatColor.PERSONAL + "Added location " + ChatColor.VALUE + number +
+                        ChatColor.PERSONAL + " to map " + ChatColor.VALUE + map.getName());
 
                 break;
         }
     }
 
+    private void handleAuthorCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+        if (!args.get(4).isPlayerDatabaseName(true)) {
+            return;
+        }
+
+        DbUser author = args.get(4).toDbUser();
+
+        switch (args.get(3).toLowerCase()) {
+            case "add" -> {
+                map.addAuthor(author.getUniqueId());
+                sender.sendPluginMessage(ChatColor.PERSONAL + "Added author " + ChatColor.VALUE + author.getName() +
+                        ChatColor.PERSONAL + " to map " + ChatColor.VALUE + map.getName());
+            }
+            case "remove" -> {
+                map.removeAuthor(author.getUniqueId());
+                sender.sendPluginMessage(ChatColor.PERSONAL + "Removed author " + ChatColor.VALUE + author.getName() +
+                        ChatColor.PERSONAL + " from map " + ChatColor.VALUE + map.getName());
+            }
+        }
+    }
+
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (args.getLength() == 4) {
-            return Type.getNames();
+        if (args.getLength() == 5) {
+            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2).equalsIgnoreCase("set")) {
+                return List.of("0", "1", "2", "3");
+            } else if (args.getString(2).equalsIgnoreCase("author")) {
+                return Server.getCommandManager().getTabCompleter().getPlayerNames();
+            }
+        } else if (args.getLength() == 4) {
+            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2).equalsIgnoreCase("set")) {
+                return Type.getNames();
+            } else if (args.getString(2).equalsIgnoreCase("author")) {
+                return List.of("add", "remove");
+            }
         } else if (args.getLength() == 3) {
-            return List.of("add", "set", "update");
+            return List.of("add", "set", "update", "author");
         } else if (args.getLength() == 2) {
             return Server.getCommandManager().getTabCompleter().getMapNames(args.getString(0));
         } else if (args.getLength() == 1) {
             return Server.getCommandManager().getTabCompleter().getGameNames();
-        } else if (args.getLength() == 5) {
-            return List.of("0", "1", "2", "3");
         }
         return List.of();
     }
