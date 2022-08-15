@@ -2,7 +2,6 @@ package de.timesnake.extension.build.cmd;
 
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.chat.Argument;
-import de.timesnake.basic.bukkit.util.chat.ChatColor;
 import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
 import de.timesnake.basic.bukkit.util.user.User;
@@ -14,8 +13,10 @@ import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -87,7 +88,9 @@ public class MapCmd implements CommandListener {
         ExWorld world = Server.getWorld(worldName);
 
         if (world == null) {
-            sender.sendPluginMessage(ChatColor.WARNING + "World " + ChatColor.VALUE + worldName + ChatColor.WARNING + " not found");
+            sender.sendPluginMessage(Component.text("World ", ExTextColor.WARNING)
+                    .append(Component.text(worldName, ExTextColor.VALUE))
+                    .append(Component.text(" not found", ExTextColor.WARNING)));
             return;
         }
 
@@ -116,8 +119,10 @@ public class MapCmd implements CommandListener {
 
         Server.getWorldManager().createWorld(worldName);
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Updated world " + ChatColor.VALUE + worldName +
-                ChatColor.PERSONAL + " for map " + ChatColor.VALUE + map.getName());
+        sender.sendPluginMessage(Component.text("Updated world ", ExTextColor.PERSONAL)
+                .append(Component.text(worldName, ExTextColor.VALUE))
+                .append(Component.text(" for map ", ExTextColor.PERSONAL))
+                .append(Component.text(map.getName(), ExTextColor.VALUE)));
 
     }
 
@@ -157,8 +162,10 @@ public class MapCmd implements CommandListener {
                 };
 
                 map.addLocation(number, dbLoc);
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Added location " + ChatColor.VALUE + number +
-                        ChatColor.PERSONAL + " to map " + ChatColor.VALUE + map.getName());
+                sender.sendPluginMessage(Component.text("Added location ", ExTextColor.PERSONAL)
+                        .append(Component.text(number, ExTextColor.VALUE))
+                        .append(Component.text(" to map ", ExTextColor.PERSONAL))
+                        .append(Component.text(map.getName(), ExTextColor.VALUE)));
 
                 break;
         }
@@ -174,13 +181,17 @@ public class MapCmd implements CommandListener {
         switch (args.get(3).toLowerCase()) {
             case "add" -> {
                 map.addAuthor(author.getUniqueId());
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Added author " + ChatColor.VALUE + author.getName() +
-                        ChatColor.PERSONAL + " to map " + ChatColor.VALUE + map.getName());
+                sender.sendPluginMessage(Component.text("Added author ", ExTextColor.PERSONAL)
+                        .append(Component.text(author.getName(), ExTextColor.VALUE))
+                        .append(Component.text("to map ", ExTextColor.PERSONAL))
+                        .append(Component.text(map.getName(), ExTextColor.VALUE)));
             }
             case "remove" -> {
                 map.removeAuthor(author.getUniqueId());
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Removed author " + ChatColor.VALUE + author.getName() +
-                        ChatColor.PERSONAL + " from map " + ChatColor.VALUE + map.getName());
+                sender.sendPluginMessage(Component.text("Removed author ", ExTextColor.PERSONAL)
+                        .append(Component.text(author.getName(), ExTextColor.VALUE))
+                        .append(Component.text("from map ", ExTextColor.PERSONAL))
+                        .append(Component.text(map.getName(), ExTextColor.VALUE)));
             }
         }
     }
