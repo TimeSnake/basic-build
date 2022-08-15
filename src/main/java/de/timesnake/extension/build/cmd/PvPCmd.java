@@ -2,12 +2,13 @@ package de.timesnake.extension.build.cmd;
 
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.chat.Argument;
-import de.timesnake.basic.bukkit.util.chat.ChatColor;
 import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class PvPCmd implements CommandListener {
             ExWorld world = args.get(0).toWorld();
             world.setPVP(!world.getPVP());
 
-            sender.sendPluginMessage(ChatColor.PERSONAL + "PvP " + (world.getPVP() ? "enabled" : "disabled"));
+            sender.sendPluginMessage(Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"), ExTextColor.PERSONAL));
             return;
         }
 
@@ -38,7 +39,7 @@ public class PvPCmd implements CommandListener {
         ExWorld world = sender.getUser().getExWorld();
         world.setPVP(!world.getPVP());
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "PvP " + (world.getPVP() ? "enabled" : "disabled"));
+        sender.sendPluginMessage(Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"), ExTextColor.PERSONAL));
     }
 
     @Override
