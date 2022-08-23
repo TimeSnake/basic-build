@@ -112,10 +112,14 @@ public class MapCmd implements CommandListener {
 
         try {
             FileUtils.deleteDirectory(worldTemplateDirectory);
+            Server.getWorldManager().copyWorldFolderFiles(worldDirectory.toPath().toRealPath().toFile(), worldTemplateDirectory);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            sender.sendPluginMessage(Component.text("Error while updating world ", ExTextColor.WARNING)
+                    .append(Component.text(worldName, ExTextColor.VALUE)));
+            Server.getWorldManager().createWorld(worldName);
+            return;
         }
-        Server.getWorldManager().copyWorldFolderFiles(worldDirectory, worldTemplateDirectory);
 
         Server.getWorldManager().createWorld(worldName);
 
