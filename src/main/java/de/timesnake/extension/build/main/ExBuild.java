@@ -35,4 +35,9 @@ public class ExBuild extends JavaPlugin {
 
         BuildServerManager.getInstance().onBuildEnable();
     }
+
+    @Override
+    public void onDisable() {
+        BuildServerManager.getInstance().onBuildDisable();
+    }
 }
