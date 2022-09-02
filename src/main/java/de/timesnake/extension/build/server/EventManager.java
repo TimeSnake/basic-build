@@ -33,10 +33,10 @@ public class EventManager implements Listener {
     @EventHandler
     public void onUserJoin(UserJoinEvent e) {
         e.getUser().sendPluginMessage(Plugin.BUILD, Component.text("Use ", ExTextColor.PERSONAL)
-                .append(Component.text("/mw tp ", ExTextColor.VALUE, TextDecoration.UNDERLINED)
+                .append(Component.text("/mw tp", ExTextColor.VALUE, TextDecoration.UNDERLINED)
                         .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "/mw tp "))
                         .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))))
-                .append(Component.text("to teleport to a world", ExTextColor.PERSONAL)));
+                .append(Component.text(" to teleport to a world", ExTextColor.PERSONAL)));
     }
 
 }
