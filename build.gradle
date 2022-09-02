@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.timesnake:library-network:1.0-SNAPSHOT-all'
+    compileOnly 'de.timesnake:library-network:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:basic-bukkit:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-bukkit:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-api:1.0-SNAPSHOT'

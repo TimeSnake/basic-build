@@ -3,7 +3,7 @@ package de.timesnake.extension.build.server;
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
-import de.timesnake.database.util.Database;
+import de.timesnake.database.util.server.DbBuildServer;
 import de.timesnake.extension.build.chat.Plugin;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.network.NetworkUtils;
@@ -19,22 +19,15 @@ public class BuildServerManager extends ServerManager {
         return (BuildServerManager) ServerManager.getInstance();
     }
 
-    private NetworkUtils networkUtils;
-
     public void onBuildEnable() {
-        this.initNetworkUtils();
     }
 
-    public void initNetworkUtils() {
-        this.networkUtils = new NetworkUtils(Database.getNetwork().getNetworkFile("network").getFile().toPath());
+    public void onBuildDisable() {
+        ((DbBuildServer) this.getDatabase()).clearWorlds();
     }
 
     @Override
     protected void initWorldManager() {
-        if (this.networkUtils == null) {
-            this.initNetworkUtils();
-        }
-
         this.worldManager = new de.timesnake.basic.bukkit.core.world.WorldManager() {
             @Override
             public ExWorld createWorld(String name, Type type) {
@@ -46,7 +39,7 @@ public class BuildServerManager extends ServerManager {
 
                 if (!Files.isSymbolicLink(world.getWorldFolder().toPath())) {
                     this.unloadWorld(world, false);
-                    WorldSyncResult result = BuildServerManager.this.networkUtils.exportAndSyncWorld(Server.getName(),
+                    WorldSyncResult result = Server.getNetwork().exportAndSyncWorld(Server.getName(),
                             worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
 
                     if (!result.isSuccessful()) {
@@ -61,24 +54,35 @@ public class BuildServerManager extends ServerManager {
                 if (world == null) return world;
 
                 this.setBuildRules(world);
+                ((DbBuildServer) Server.getDatabase()).addWorld(worldName);
                 return world;
             }
 
             @Override
-            public ExWorld cloneWorld(String name, ExWorld exWorld) {
-                ExWorld world = super.cloneWorld(name, exWorld);
-                if (world == null) return world;
-                this.setBuildRules(world);
-                return world;
+            public boolean deleteWorld(ExWorld world, boolean deleteFiles) {
+                boolean result = super.deleteWorld(world, deleteFiles);
+                if (result) {
+                    ((DbBuildServer) Server.getDatabase()).removeWorld(world.getName());
+                }
+                return result;
+            }
+
+            @Override
+            public boolean unloadWorld(ExWorld world, boolean save) {
+                boolean result = super.unloadWorld(world, save);
+                if (result) {
+                    ((DbBuildServer) Server.getDatabase()).removeWorld(world.getName());
+                }
+                return result;
             }
 
             public void setBuildRules(ExWorld world) {
                 world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-                world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
-                world.setGameRule(GameRule.DO_PATROL_SPAWNING, false);
                 world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
                 world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-                world.setGameRule(GameRule.DO_WARDEN_SPAWNING, false);
+                world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+                world.setGameRule(GameRule.DISABLE_RAIDS, true);
+                world.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
             }
         };
     }
