@@ -14,6 +14,8 @@ import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.kyori.adventure.text.Component;
@@ -28,6 +30,10 @@ public class MapCmd implements CommandListener {
 
     private final File templateWorldDir;
 
+    private Code.Permission mapPerm;
+    private Code.Help mapNotExists;
+    private Code.Help locationAlreadyExists;
+
     public MapCmd(File templateDir) {
         this.templateWorldDir = new File(templateDir.getAbsolutePath() + File.separator + "worlds");
     }
@@ -41,7 +47,7 @@ public class MapCmd implements CommandListener {
 
         User user = sender.getUser();
 
-        if (!sender.hasPermission("exbuild.map", 2401)) {
+        if (!sender.hasPermission(this.mapPerm)) {
             return;
         }
 
@@ -65,7 +71,7 @@ public class MapCmd implements CommandListener {
         String mapName = args.getString(1);
 
         if (!game.containsMap(mapName)) {
-            sender.sendMessageNotExist(mapName, 2501, "Map");
+            sender.sendMessageNotExist(mapName, this.mapNotExists, "Map");
             return;
         }
 
@@ -148,7 +154,7 @@ public class MapCmd implements CommandListener {
         switch (args.getString(2).toLowerCase()) {
             case "add":
                 if (map.containsLocation(number)) {
-                    sender.sendMessageAlreadyExist(String.valueOf(number), 2502, "Location");
+                    sender.sendMessageAlreadyExist(String.valueOf(number), this.locationAlreadyExists, "Location");
                     return;
                 }
             case "set":
@@ -222,6 +228,13 @@ public class MapCmd implements CommandListener {
             return Server.getCommandManager().getTabCompleter().getGameNames();
         }
         return List.of();
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.mapPerm = plugin.createPermssionCode("map", "exbuild.map");
+        this.mapNotExists = plugin.createHelpCode("map", "Map not exists");
+        this.locationAlreadyExists = plugin.createHelpCode("map", "Location already exists");
     }
 
     enum Type {
