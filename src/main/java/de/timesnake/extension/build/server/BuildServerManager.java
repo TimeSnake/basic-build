@@ -1,8 +1,27 @@
+/*
+ * extension-build.main
+ * Copyright (C) 2022 timesnake
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.timesnake.extension.build.server;
 
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
+import de.timesnake.basic.bukkit.util.world.ExWorldType;
 import de.timesnake.database.util.server.DbBuildServer;
 import de.timesnake.extension.build.chat.Plugin;
 import de.timesnake.library.basic.util.Status;
@@ -30,7 +49,7 @@ public class BuildServerManager extends ServerManager {
     protected void initWorldManager() {
         this.worldManager = new de.timesnake.basic.bukkit.core.world.WorldManager() {
             @Override
-            public ExWorld createWorld(String name, Type type) {
+            public ExWorld createWorld(String name, ExWorldType type) {
                 ExWorld world = super.createWorld(name, type);
 
                 if (world == null || world.getName().equals("world")) return world;
