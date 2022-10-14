@@ -22,6 +22,7 @@ import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.basic.bukkit.util.world.ExWorldType;
+import de.timesnake.basic.bukkit.util.world.WorldManager;
 import de.timesnake.database.util.server.DbBuildServer;
 import de.timesnake.extension.build.chat.Plugin;
 import de.timesnake.library.basic.util.Status;
@@ -46,8 +47,8 @@ public class BuildServerManager extends ServerManager {
     }
 
     @Override
-    protected void initWorldManager() {
-        this.worldManager = new de.timesnake.basic.bukkit.core.world.WorldManager() {
+    protected WorldManager initWorldManager() {
+        return new de.timesnake.basic.bukkit.core.world.WorldManager() {
             @Override
             public ExWorld createWorld(String name, ExWorldType type) {
                 ExWorld world = super.createWorld(name, type);
