@@ -1,5 +1,5 @@
 /*
- * extension-build.main
+ * timesnake.extension-build.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -18,11 +18,16 @@
 
 package de.timesnake.extension.build.chat;
 
+import de.timesnake.library.basic.util.LogHelper;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Plugin extends de.timesnake.basic.bukkit.util.chat.Plugin {
 
-    public static final Plugin BUILD = new Plugin("Build", "XBL");
+    public static final Plugin BUILD = new Plugin("Build", "XBL", LogHelper.getLogger("Build", Level.INFO));
 
-    protected Plugin(String name, String code) {
-        super(name, code);
+    protected Plugin(String name, String code, Logger logger) {
+        super(name, code, logger);
     }
 }
