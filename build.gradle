@@ -33,7 +33,7 @@ dependencies {
 
 group = project.group
 version = '1.0-SNAPSHOT'
-archivesBaseName = 'extension-build'
+archivesBaseName = 'basic-build'
 
 task buildFatJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
