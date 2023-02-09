@@ -19,10 +19,11 @@ import net.kyori.adventure.text.Component;
 
 public class PvPCmd implements CommandListener {
 
-    private Code.Permission pvpPerm;
+    private Code pvpPerm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.pvpPerm)) {
             return;
         }
@@ -35,7 +36,9 @@ public class PvPCmd implements CommandListener {
             ExWorld world = args.get(0).toWorld();
             world.setPVP(!world.getPVP());
 
-            sender.sendPluginMessage(Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"), ExTextColor.PERSONAL));
+            sender.sendPluginMessage(
+                    Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"),
+                            ExTextColor.PERSONAL));
             return;
         }
 
@@ -46,11 +49,13 @@ public class PvPCmd implements CommandListener {
         ExWorld world = sender.getUser().getExWorld();
         world.setPVP(!world.getPVP());
 
-        sender.sendPluginMessage(Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"), ExTextColor.PERSONAL));
+        sender.sendPluginMessage(Component.text("PvP " + (world.getPVP() ? "enabled" : "disabled"),
+                ExTextColor.PERSONAL));
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.length() == 1) {
             return Server.getCommandManager().getTabCompleter().getWorldNames();
         }
@@ -59,6 +64,6 @@ public class PvPCmd implements CommandListener {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.pvpPerm = plugin.createPermssionCode("pvp", "exbuild.pvp");
+        this.pvpPerm = plugin.createPermssionCode("exbuild.pvp");
     }
 }
