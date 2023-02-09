@@ -33,16 +33,17 @@ public class MapCmd implements CommandListener {
 
     private final File templateWorldDir;
 
-    private Code.Permission mapPerm;
-    private Code.Help mapNotExists;
-    private Code.Help locationAlreadyExists;
+    private Code mapPerm;
+    private Code mapNotExists;
+    private Code locationAlreadyExists;
 
     public MapCmd(File templateDir) {
         this.templateWorldDir = new File(templateDir.getAbsolutePath() + File.separator + "worlds");
     }
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
 
         if (!sender.isPlayer(true)) {
             return;
@@ -116,16 +117,20 @@ public class MapCmd implements CommandListener {
             gameType = "game";
         }
 
-        File worldTemplateDirectory = new File(this.templateWorldDir.getAbsolutePath() + File.separator + gameType +
-                File.separator + gameName + File.separator + worldName);
+        File worldTemplateDirectory = new File(
+                this.templateWorldDir.getAbsolutePath() + File.separator + gameType +
+                        File.separator + gameName + File.separator + worldName);
 
         try {
             FileUtils.deleteDirectory(worldTemplateDirectory);
-            Server.getWorldManager().copyWorldFolderFiles(worldDirectory.toPath().toRealPath().toFile(), worldTemplateDirectory);
+            Server.getWorldManager()
+                    .copyWorldFolderFiles(worldDirectory.toPath().toRealPath().toFile(),
+                            worldTemplateDirectory);
         } catch (IOException e) {
             e.printStackTrace();
-            sender.sendPluginMessage(Component.text("Error while updating world ", ExTextColor.WARNING)
-                    .append(Component.text(worldName, ExTextColor.VALUE)));
+            sender.sendPluginMessage(
+                    Component.text("Error while updating world ", ExTextColor.WARNING)
+                            .append(Component.text(worldName, ExTextColor.VALUE)));
             Server.getWorldManager().createWorld(worldName);
             return;
         }
@@ -157,7 +162,8 @@ public class MapCmd implements CommandListener {
         switch (args.getString(2).toLowerCase()) {
             case "add":
                 if (map.containsLocation(number)) {
-                    sender.sendMessageAlreadyExist(String.valueOf(number), this.locationAlreadyExists, "Location");
+                    sender.sendMessageAlreadyExist(String.valueOf(number),
+                            this.locationAlreadyExists, "Location");
                     return;
                 }
             case "set":
@@ -165,13 +171,16 @@ public class MapCmd implements CommandListener {
 
                 DbLocation dbLoc = switch (type) {
                     case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
-                    case BLOCK_FACING ->
-                            Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
-                    case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
-                    case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
+                    case BLOCK_FACING -> Server.getDbLocationFromLocation(
+                            user.getExLocation().zeroBlock().roundFacing());
+                    case EXACT ->
+                            Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
+                    case EXACT_FACING ->
+                            Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
                     case EXACT_EXACT_FACING -> user.getDbLocation();
                     case MIDDLE -> Server.getDbLocationFromLocation(loc.middleBlock().zeroFacing());
-                    case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleBlock().roundFacing());
+                    case MIDDLE_FACING ->
+                            Server.getDbLocationFromLocation(loc.middleBlock().roundFacing());
                 };
 
                 map.addLocation(number, dbLoc);
@@ -210,15 +219,18 @@ public class MapCmd implements CommandListener {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.getLength() == 5) {
-            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2).equalsIgnoreCase("set")) {
+            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2)
+                    .equalsIgnoreCase("set")) {
                 return List.of("0", "1", "2", "3");
             } else if (args.getString(2).equalsIgnoreCase("author")) {
                 return Server.getCommandManager().getTabCompleter().getPlayerNames();
             }
         } else if (args.getLength() == 4) {
-            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2).equalsIgnoreCase("set")) {
+            if (args.getString(2).equalsIgnoreCase("add") || args.getString(2)
+                    .equalsIgnoreCase("set")) {
                 return Type.getNames();
             } else if (args.getString(2).equalsIgnoreCase("author")) {
                 return List.of("add", "remove");
@@ -235,9 +247,9 @@ public class MapCmd implements CommandListener {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.mapPerm = plugin.createPermssionCode("map", "exbuild.map");
-        this.mapNotExists = plugin.createHelpCode("map", "Map not exists");
-        this.locationAlreadyExists = plugin.createHelpCode("map", "Location already exists");
+        this.mapPerm = plugin.createPermssionCode("exbuild.map");
+        this.mapNotExists = plugin.createHelpCode("Map not exists");
+        this.locationAlreadyExists = plugin.createHelpCode("Location already exists");
     }
 
     enum Type {
