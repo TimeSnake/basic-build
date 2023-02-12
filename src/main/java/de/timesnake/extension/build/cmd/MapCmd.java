@@ -17,7 +17,7 @@ import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
