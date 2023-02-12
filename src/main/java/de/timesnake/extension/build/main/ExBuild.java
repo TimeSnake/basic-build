@@ -32,7 +32,8 @@ public class ExBuild extends JavaPlugin {
         plugin = this;
 
         Server.getCommandManager().addCommand(this, "map",
-                new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()), Plugin.BUILD);
+                new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()),
+                Plugin.BUILD);
         Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.BUKKIT);
 
         new EventManager();
