@@ -10,7 +10,7 @@ import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.basic.bukkit.util.world.ExWorldType;
 import de.timesnake.basic.bukkit.util.world.WorldManager;
 import de.timesnake.database.util.server.DbBuildServer;
-import de.timesnake.extension.build.chat.Plugin;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
@@ -38,17 +38,20 @@ public class BuildServerManager extends ServerManager {
             public ExWorld createWorld(String name, ExWorldType type) {
                 ExWorld world = super.createWorld(name, type);
 
-                if (world == null || world.getName().equals("world")) return world;
+                if (world == null || world.getName().equals("world")) {
+                    return world;
+                }
 
                 String worldName = world.getName();
 
                 if (!Files.isSymbolicLink(world.getWorldFolder().toPath())) {
                     this.unloadWorld(world, false);
-                    WorldSyncResult result = Server.getNetwork().exportAndSyncWorld(Server.getName(),
-                            worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
+                    WorldSyncResult result = Server.getNetwork()
+                            .exportAndSyncWorld(Server.getName(),
+                                    worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
 
                     if (!result.isSuccessful()) {
-                        Server.printWarning(Plugin.BUILD, "Error while exporting world " + worldName + ", " +
+                        Loggers.WORLDS.warning("Error while exporting world " + worldName + ", " +
                                 ((WorldSyncResult.Fail) result).getReason());
                         return null;
                     }
@@ -56,7 +59,9 @@ public class BuildServerManager extends ServerManager {
                     world = this.createWorldFromFile(worldName);
                 }
 
-                if (world == null) return world;
+                if (world == null) {
+                    return world;
+                }
 
                 this.setBuildRules(world);
                 ((DbBuildServer) Server.getDatabase()).addWorld(worldName);
