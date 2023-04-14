@@ -14,9 +14,11 @@ import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
+import de.timesnake.library.network.WorldSyncResult.Fail;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.bukkit.GameRule;
+import org.jetbrains.annotations.Nullable;
 
 public class BuildServerManager extends ServerManager {
 
@@ -35,8 +37,8 @@ public class BuildServerManager extends ServerManager {
     protected WorldManager initWorldManager() {
         return new de.timesnake.basic.bukkit.core.world.WorldManager() {
             @Override
-            public ExWorld createWorld(String name, ExWorldType type) {
-                ExWorld world = super.createWorld(name, type);
+            public ExWorld createWorld(String name, ExWorldType type, boolean temporary) {
+                ExWorld world = super.createWorld(name, type, temporary);
 
                 if (world == null || world.getName().equals("world")) {
                     return world;
@@ -57,6 +59,8 @@ public class BuildServerManager extends ServerManager {
                     }
 
                     world = this.createWorldFromFile(worldName);
+
+                    Loggers.WORLDS.info("Exported world " + worldName);
                 }
 
                 if (world == null) {
@@ -66,6 +70,42 @@ public class BuildServerManager extends ServerManager {
                 this.setBuildRules(world);
                 ((DbBuildServer) Server.getDatabase()).addWorld(worldName);
                 return world;
+            }
+
+            @Override
+            public @Nullable ExWorld cloneWorld(String name, ExWorld exWorld) {
+                ExWorld clonedWorld = super.cloneWorld(name, exWorld);
+
+                if (clonedWorld == null || clonedWorld.getName().equals("world")) {
+                    return clonedWorld;
+                }
+
+                String worldName = clonedWorld.getName();
+
+                if (!Files.isSymbolicLink(clonedWorld.getWorldFolder().toPath())) {
+                    this.unloadWorld(clonedWorld, false);
+                    WorldSyncResult result = Server.getNetwork()
+                            .exportAndSyncWorld(Server.getName(),
+                                    worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
+
+                    if (!result.isSuccessful()) {
+                        Loggers.WORLDS.warning("Error while exporting world " + worldName + ", " +
+                                ((Fail) result).getReason());
+                        return null;
+                    }
+
+                    clonedWorld = this.createWorldFromFile(worldName);
+
+                    Loggers.WORLDS.info("Exported world " + worldName);
+                }
+
+                if (clonedWorld == null) {
+                    return clonedWorld;
+                }
+
+                this.setBuildRules(clonedWorld);
+                ((DbBuildServer) Server.getDatabase()).addWorld(worldName);
+                return clonedWorld;
             }
 
             @Override
