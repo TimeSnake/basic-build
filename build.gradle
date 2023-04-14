@@ -33,7 +33,7 @@ dependencies {
 }
 
 group = project.group
-version = '1.0-SNAPSHOT'
+version = '1.1-SNAPSHOT'
 archivesBaseName = 'basic-build'
 
 task buildFatJar(type: Jar) {
