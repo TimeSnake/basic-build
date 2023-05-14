@@ -1,6 +1,6 @@
-main: de.timesnake.extension.build.main.ExBuild
+main: de.timesnake.basic.build.main.BasicBuild
 version: 1.0
-name: extension-build
+name: basic-build
 author: Mn
 depend: [ basic-bukkit ]
 api-version: 1.13

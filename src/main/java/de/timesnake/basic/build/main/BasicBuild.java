@@ -2,25 +2,25 @@
  * Copyright (C) 2023 timesnake
  */
 
-package de.timesnake.extension.build.main;
+package de.timesnake.basic.build.main;
 
+import de.timesnake.basic.build.chat.Plugin;
+import de.timesnake.basic.build.cmd.MapCmd;
+import de.timesnake.basic.build.cmd.PvPCmd;
+import de.timesnake.basic.build.server.BuildServerManager;
+import de.timesnake.basic.build.server.EventManager;
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.database.util.Database;
-import de.timesnake.extension.build.chat.Plugin;
-import de.timesnake.extension.build.cmd.MapCmd;
-import de.timesnake.extension.build.cmd.PvPCmd;
-import de.timesnake.extension.build.server.BuildServerManager;
-import de.timesnake.extension.build.server.EventManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class ExBuild extends JavaPlugin {
+public class BasicBuild extends JavaPlugin {
 
-    public static ExBuild getPlugin() {
+    public static BasicBuild getPlugin() {
         return plugin;
     }
 
-    private static ExBuild plugin;
+    private static BasicBuild plugin;
 
     @Override
     public void onLoad() {
