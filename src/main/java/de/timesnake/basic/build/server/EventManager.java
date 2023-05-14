@@ -2,10 +2,10 @@
  * Copyright (C) 2023 timesnake
  */
 
-package de.timesnake.extension.build.server;
+package de.timesnake.basic.build.server;
 
+import de.timesnake.basic.build.main.BasicBuild;
 import de.timesnake.basic.bukkit.util.Server;
-import de.timesnake.extension.build.main.ExBuild;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockExplodeEvent;
@@ -14,7 +14,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 public class EventManager implements Listener {
 
     public EventManager() {
-        Server.registerListener(this, ExBuild.getPlugin());
+        Server.registerListener(this, BasicBuild.getPlugin());
     }
 
     @EventHandler
