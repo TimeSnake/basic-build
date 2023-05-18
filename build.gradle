@@ -1,5 +1,11 @@
+group = project.group
+version = '1.1-SNAPSHOT'
+archivesBaseName = 'basic-build'
+var projectId = 46
+
 repositories {
   mavenLocal()
+  mavenCentral()
   maven {
     url = uri 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
   }
@@ -9,7 +15,6 @@ repositories {
   maven {
     url = uri 'https://repo.maven.apache.org/maven2/'
   }
-  mavenCentral()
 }
 
 dependencies {
@@ -31,10 +36,6 @@ dependencies {
   compileOnly project.spigot_api
   compileOnly project.spigot
 }
-
-group = project.group
-version = '1.1-SNAPSHOT'
-archivesBaseName = 'basic-build'
 
 task buildFatJar(type: Jar) {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -59,3 +60,15 @@ jar.finalizedBy(buildFatJar)
 copyJarToPlugins.dependsOn(buildFatJar)
 copyJarToPlugins.dependsOn(deleteOldPluginJar)
 jar.finalizedBy(copyJarToPlugins)
+
+publishing {
+  repositories {
+    maven {
+      url getDeployUrl(projectId)
+      credentials {
+        username = deploy_token_name
+        password = deploy_token_key
+      }
+    }
+  }
+}
