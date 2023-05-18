@@ -13,18 +13,18 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 
 public class EventManager implements Listener {
 
-    public EventManager() {
-        Server.registerListener(this, BasicBuild.getPlugin());
-    }
+  public EventManager() {
+    Server.registerListener(this, BasicBuild.getPlugin());
+  }
 
-    @EventHandler
-    public void onEntityExplode(EntityExplodeEvent e) {
-        e.setYield(0);
-    }
+  @EventHandler
+  public void onEntityExplode(EntityExplodeEvent e) {
+    e.setYield(0);
+  }
 
-    @EventHandler
-    public void onBlockExplode(BlockExplodeEvent e) {
-        e.setYield(0);
-    }
+  @EventHandler
+  public void onBlockExplode(BlockExplodeEvent e) {
+    e.setYield(0);
+  }
 
 }

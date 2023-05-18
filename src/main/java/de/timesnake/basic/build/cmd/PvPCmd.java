@@ -17,46 +17,46 @@ import java.util.List;
 
 public class PvPCmd implements CommandListener {
 
-    private Code pvpPerm;
+  private Code pvpPerm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        sender.hasPermissionElseExit(this.pvpPerm);
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    sender.hasPermissionElseExit(this.pvpPerm);
 
-        if (args.isLengthEquals(1, false)) {
-            if (!args.get(0).isWorldName(true)) {
-                return;
-            }
+    if (args.isLengthEquals(1, false)) {
+      if (!args.get(0).isWorldName(true)) {
+        return;
+      }
 
-            ExWorld world = args.get(0).toWorld();
-            world.setPVP(!world.getPVP());
+      ExWorld world = args.get(0).toWorld();
+      world.setPVP(!world.getPVP());
 
-            sender.sendPluginTDMessage("§sPvP " + (world.getPVP() ? "enabled" : "disabled"));
-            return;
-        }
-
-        if (!sender.isPlayer(true)) {
-            return;
-        }
-
-        ExWorld world = sender.getUser().getExWorld();
-        world.setPVP(!world.getPVP());
-
-        sender.sendPluginTDMessage("§sPvP " + (world.getPVP() ? "enabled" : "disabled"));
+      sender.sendPluginTDMessage("§sPvP " + (world.getPVP() ? "enabled" : "disabled"));
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (args.length() == 1) {
-            return Server.getCommandManager().getTabCompleter().getWorldNames();
-        }
-        return List.of();
+    if (!sender.isPlayer(true)) {
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.pvpPerm = plugin.createPermssionCode("exbuild.pvp");
+    ExWorld world = sender.getUser().getExWorld();
+    world.setPVP(!world.getPVP());
+
+    sender.sendPluginTDMessage("§sPvP " + (world.getPVP() ? "enabled" : "disabled"));
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (args.length() == 1) {
+      return Server.getCommandManager().getTabCompleter().getWorldNames();
     }
+    return List.of();
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.pvpPerm = plugin.createPermssionCode("exbuild.pvp");
+  }
 }
