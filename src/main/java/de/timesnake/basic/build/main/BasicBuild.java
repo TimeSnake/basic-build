@@ -16,33 +16,33 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class BasicBuild extends JavaPlugin {
 
-    public static BasicBuild getPlugin() {
-        return plugin;
-    }
+  public static BasicBuild getPlugin() {
+    return plugin;
+  }
 
-    private static BasicBuild plugin;
+  private static BasicBuild plugin;
 
-    @Override
-    public void onLoad() {
-        ServerManager.setInstance(new BuildServerManager());
-    }
+  @Override
+  public void onLoad() {
+    ServerManager.setInstance(new BuildServerManager());
+  }
 
-    @Override
-    public void onEnable() {
-        plugin = this;
+  @Override
+  public void onEnable() {
+    plugin = this;
 
-        Server.getCommandManager().addCommand(this, "map",
-                new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()),
-                Plugin.BUILD);
-        Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.BUKKIT);
+    Server.getCommandManager().addCommand(this, "map",
+        new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()),
+        Plugin.BUILD);
+    Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.BUKKIT);
 
-        new EventManager();
+    new EventManager();
 
-        BuildServerManager.getInstance().onBuildEnable();
-    }
+    BuildServerManager.getInstance().onBuildEnable();
+  }
 
-    @Override
-    public void onDisable() {
-        BuildServerManager.getInstance().onBuildDisable();
-    }
+  @Override
+  public void onDisable() {
+    BuildServerManager.getInstance().onBuildDisable();
+  }
 }
