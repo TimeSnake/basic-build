@@ -49,9 +49,7 @@ public class BuildServerManager extends ServerManager {
 
         if (!Files.isSymbolicLink(world.getWorldFolder().toPath())) {
           this.unloadWorld(world, false);
-          WorldSyncResult result = Server.getNetwork()
-              .exportAndSyncWorld(Server.getName(),
-                  worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
+          WorldSyncResult result = Server.getNetwork().exportAndSyncWorld(Server.getName(), worldName, Path.of("build"));
 
           if (!result.isSuccessful()) {
             Loggers.WORLDS.warning("Error while exporting world " + worldName + ", " +
