@@ -15,10 +15,11 @@ import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
 import de.timesnake.library.network.WorldSyncResult.Fail;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.bukkit.GameRule;
 import org.jetbrains.annotations.Nullable;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class BuildServerManager extends ServerManager {
 
@@ -64,7 +65,7 @@ public class BuildServerManager extends ServerManager {
         }
 
         if (world == null) {
-          return world;
+          return null;
         }
 
         this.setBuildRules(world);
