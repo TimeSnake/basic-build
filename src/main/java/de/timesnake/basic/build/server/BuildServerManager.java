@@ -15,6 +15,8 @@ import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
 import de.timesnake.library.network.WorldSyncResult.Fail;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,6 +30,7 @@ public class BuildServerManager extends ServerManager {
   }
 
   public void onBuildEnable() {
+    Bukkit.setDefaultGameMode(GameMode.CREATIVE);
   }
 
   public void onBuildDisable() {
