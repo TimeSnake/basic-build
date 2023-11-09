@@ -22,12 +22,13 @@ import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import net.kyori.adventure.text.Component;
-import org.apache.commons.io.FileUtils;
 
 public class MapCmd implements CommandListener {
 
@@ -176,8 +177,8 @@ public class MapCmd implements CommandListener {
           case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
           case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
           case EXACT_EXACT_FACING -> user.getDbLocation();
-          case MIDDLE -> Server.getDbLocationFromLocation(loc.middleBlock().zeroFacing());
-          case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleBlock().roundFacing());
+          case MIDDLE -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().zeroFacing());
+          case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().roundFacing());
         };
 
         map.addLocation(number, dbLoc);
