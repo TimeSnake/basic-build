@@ -34,7 +34,7 @@ public class BasicBuild extends JavaPlugin {
     Server.getCommandManager().addCommand(this, "map",
         new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()),
         Plugin.BUILD);
-    Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.BUKKIT);
+    Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.SERVER);
 
     new EventManager();
 
