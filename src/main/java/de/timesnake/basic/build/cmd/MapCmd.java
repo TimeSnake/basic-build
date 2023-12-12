@@ -8,9 +8,11 @@ import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.chat.Argument;
 import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
+import de.timesnake.basic.bukkit.util.exception.WorldNotExistException;
 import de.timesnake.basic.bukkit.util.user.User;
 import de.timesnake.basic.bukkit.util.world.ExLocation;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
+import de.timesnake.basic.bukkit.util.world.entity.HoloDisplay;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbMap;
@@ -27,10 +29,11 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MapCmd implements CommandListener {
+
+  private final Map<ExWorld, List<HoloDisplay>> mapLocDisplays = new HashMap<>();
 
   private final File templateWorldDir;
 
@@ -90,8 +93,37 @@ public class MapCmd implements CommandListener {
       case "add", "set" -> this.handleLocationCmd(sender, user, args, map);
       case "update" -> this.handleUpdateCmd(sender, game, map);
       case "author" -> this.handleAuthorCmd(sender, args, map);
+      case "show_loc" -> this.handleShowLocCmd(sender, args, map);
     }
 
+  }
+
+  private void handleShowLocCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    ExWorld world = Server.getWorldManager().getWorld(map.getWorldName());
+
+    if (world == null) {
+      sender.sendPluginTDMessage("§wWorld §v" + map.getWorldName() + "§w not found");
+      return;
+    }
+
+    if (this.mapLocDisplays.get(world) == null) {
+      List<HoloDisplay> displays = new LinkedList<>();
+      for (Map.Entry<Integer, DbLocation> entry : map.getMapLocations().entrySet()) {
+        try {
+          HoloDisplay display = new HoloDisplay(Server.getExLocationFromDbLocation(entry.getValue()),
+              List.of(String.valueOf(entry.getKey())));
+          displays.add(display);
+          Server.getEntityManager().registerEntity(display);
+        } catch (WorldNotExistException e) {
+          sender.sendPluginTDMessage("§wWorld §v" + map.getWorldName() + "§w not found for location §v" + entry.getKey());
+        }
+      }
+      this.mapLocDisplays.put(world, displays);
+      sender.sendPluginTDMessage("§sShowing locations of map §v" + map.getName());
+    } else {
+      this.mapLocDisplays.remove(world).forEach(d -> Server.getEntityManager().unregisterEntity(d));
+      sender.sendPluginTDMessage("§sHiding locations of map §v" + map.getName());
+    }
   }
 
   private void handleUpdateCmd(Sender sender, DbGame game, DbMap map) {
@@ -99,9 +131,7 @@ public class MapCmd implements CommandListener {
     ExWorld world = Server.getWorld(worldName);
 
     if (world == null) {
-      sender.sendPluginMessage(Component.text("World ", ExTextColor.WARNING)
-          .append(Component.text(worldName, ExTextColor.VALUE))
-          .append(Component.text(" not found", ExTextColor.WARNING)));
+      sender.sendPluginTDMessage("§wWorld §v" + map.getWorldName() + "§w not found");
       return;
     }
 
@@ -160,34 +190,38 @@ public class MapCmd implements CommandListener {
 
     Integer number = args.get(4).toInt();
 
+    ExLocation loc = user.getExLocation();
+
+    DbLocation dbLoc = switch (type) {
+      case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
+      case BLOCK_FACING -> Server.getDbLocationFromLocation(
+          user.getExLocation().zeroBlock().roundFacing());
+      case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
+      case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
+      case EXACT_EXACT_FACING -> user.getDbLocation();
+      case MIDDLE -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().zeroFacing());
+      case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().roundFacing());
+    };
+
     switch (args.getString(2).toLowerCase()) {
-      case "add":
+      case "add" -> {
         if (map.containsLocation(number)) {
-          sender.sendMessageAlreadyExist(String.valueOf(number),
-              this.locationAlreadyExists, "Location");
+          sender.sendMessageAlreadyExist(String.valueOf(number), this.locationAlreadyExists, "Location");
           return;
         }
-      case "set":
-        ExLocation loc = user.getExLocation();
-
-        DbLocation dbLoc = switch (type) {
-          case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
-          case BLOCK_FACING -> Server.getDbLocationFromLocation(
-              user.getExLocation().zeroBlock().roundFacing());
-          case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
-          case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
-          case EXACT_EXACT_FACING -> user.getDbLocation();
-          case MIDDLE -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().zeroFacing());
-          case MIDDLE_FACING -> Server.getDbLocationFromLocation(loc.middleHorizontalBlock().roundFacing());
-        };
-
-        map.addLocation(number, dbLoc);
+        map.setLocation(number, dbLoc);
         sender.sendPluginMessage(Component.text("Added location ", ExTextColor.PERSONAL)
             .append(Component.text(number, ExTextColor.VALUE))
             .append(Component.text(" to map ", ExTextColor.PERSONAL))
             .append(Component.text(map.getName(), ExTextColor.VALUE)));
-
-        break;
+      }
+      case "set" -> {
+        map.setLocation(number, dbLoc);
+        sender.sendPluginMessage(Component.text("Updated location ", ExTextColor.PERSONAL)
+            .append(Component.text(number, ExTextColor.VALUE))
+            .append(Component.text(" to map ", ExTextColor.PERSONAL))
+            .append(Component.text(map.getName(), ExTextColor.VALUE)));
+      }
     }
   }
 
@@ -234,7 +268,7 @@ public class MapCmd implements CommandListener {
         return List.of("add", "remove");
       }
     } else if (args.getLength() == 3) {
-      return List.of("add", "set", "update", "author");
+      return List.of("add", "set", "update", "author", "show_loc");
     } else if (args.getLength() == 2) {
       return Server.getCommandManager().getTabCompleter().getMapNames(args.getString(0));
     } else if (args.getLength() == 1) {
