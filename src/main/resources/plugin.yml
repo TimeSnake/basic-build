@@ -1,7 +1,7 @@
 main: de.timesnake.basic.build.main.BasicBuild
 version: 1.1
 name: basic-build
-author: Mn
+author: timesnake
 depend: [ basic-bukkit ]
 api-version: 1.13
 

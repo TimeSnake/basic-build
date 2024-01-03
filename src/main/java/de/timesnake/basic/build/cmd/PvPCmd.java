@@ -4,24 +4,22 @@
 
 package de.timesnake.basic.build.cmd;
 
-import de.timesnake.basic.bukkit.util.Server;
-import de.timesnake.basic.bukkit.util.chat.Argument;
-import de.timesnake.basic.bukkit.util.chat.CommandListener;
-import de.timesnake.basic.bukkit.util.chat.Sender;
+import de.timesnake.basic.bukkit.util.chat.cmd.Argument;
+import de.timesnake.basic.bukkit.util.chat.cmd.CommandListener;
+import de.timesnake.basic.bukkit.util.chat.cmd.Completion;
+import de.timesnake.basic.bukkit.util.chat.cmd.Sender;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 
 public class PvPCmd implements CommandListener {
 
-  private Code pvpPerm;
+  private final Code pvpPerm = Plugin.SERVER.createPermssionCode("exbuild.pvp");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     sender.hasPermissionElseExit(this.pvpPerm);
 
     if (args.isLengthEquals(1, false)) {
@@ -47,16 +45,13 @@ public class PvPCmd implements CommandListener {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (args.length() == 1) {
-      return Server.getCommandManager().getTabCompleter().getWorldNames();
-    }
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion(this.pvpPerm)
+        .addArgument(Completion.ofWorldNames());
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.pvpPerm = plugin.createPermssionCode("exbuild.pvp");
+  public String getPermission() {
+    return this.pvpPerm.getPermission();
   }
 }

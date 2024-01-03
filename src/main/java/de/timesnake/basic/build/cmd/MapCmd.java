@@ -4,10 +4,12 @@
 
 package de.timesnake.basic.build.cmd;
 
+import de.timesnake.basic.build.chat.Plugin;
 import de.timesnake.basic.bukkit.util.Server;
-import de.timesnake.basic.bukkit.util.chat.Argument;
-import de.timesnake.basic.bukkit.util.chat.CommandListener;
-import de.timesnake.basic.bukkit.util.chat.Sender;
+import de.timesnake.basic.bukkit.util.chat.cmd.Argument;
+import de.timesnake.basic.bukkit.util.chat.cmd.CommandListener;
+import de.timesnake.basic.bukkit.util.chat.cmd.Completion;
+import de.timesnake.basic.bukkit.util.chat.cmd.Sender;
 import de.timesnake.basic.bukkit.util.exception.WorldNotExistException;
 import de.timesnake.basic.bukkit.util.user.User;
 import de.timesnake.basic.bukkit.util.world.ExLocation;
@@ -20,10 +22,9 @@ import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 
@@ -37,16 +38,16 @@ public class MapCmd implements CommandListener {
 
   private final File templateWorldDir;
 
-  private Code mapPerm;
-  private Code mapNotExists;
-  private Code locationAlreadyExists;
+  private final Code mapPerm = Plugin.BUILD.createPermssionCode("exbuild.map");
+  private final Code mapNotExists = Plugin.BUILD.createHelpCode("Map not exists");
+  private final Code locationAlreadyExists = Plugin.BUILD.createHelpCode("Location already exists");
 
   public MapCmd(File templateDir) {
     this.templateWorldDir = new File(templateDir.getAbsolutePath() + File.separator + "worlds");
   }
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
 
     if (!sender.isPlayer(true)) {
@@ -251,37 +252,22 @@ public class MapCmd implements CommandListener {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (args.getLength() == 5) {
-      if (args.getString(2).equalsIgnoreCase("add") || args.getString(2)
-          .equalsIgnoreCase("set")) {
-        return List.of("0", "1", "2", "3");
-      } else if (args.getString(2).equalsIgnoreCase("author")) {
-        return Server.getCommandManager().getTabCompleter().getPlayerNames();
-      }
-    } else if (args.getLength() == 4) {
-      if (args.getString(2).equalsIgnoreCase("add") || args.getString(2)
-          .equalsIgnoreCase("set")) {
-        return Type.getNames();
-      } else if (args.getString(2).equalsIgnoreCase("author")) {
-        return List.of("add", "remove");
-      }
-    } else if (args.getLength() == 3) {
-      return List.of("add", "set", "update", "author", "show_loc");
-    } else if (args.getLength() == 2) {
-      return Server.getCommandManager().getTabCompleter().getMapNames(args.getString(0));
-    } else if (args.getLength() == 1) {
-      return Server.getCommandManager().getTabCompleter().getGameNames();
-    }
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion(this.mapPerm)
+        .addArgument(Completion.ofGameNames()
+            .addArgument(new Completion(((sender, cmd, args) -> Completion.ofMapNames(args.getString(0))
+                .complete(sender, new PluginCommand(cmd, sender.getPlugin()), args, args.length())))
+                .addArgument(new Completion("update", "show_loc"))
+                .addArgument(new Completion("add", "set")
+                    .addArgument(new Completion(Type.getNames())))
+                .addArgument(new Completion("author")
+                    .addArgument(new Completion("add", "remove")
+                        .addArgument(Completion.ofPlayerNames())))));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.mapPerm = plugin.createPermssionCode("exbuild.map");
-    this.mapNotExists = plugin.createHelpCode("Map not exists");
-    this.locationAlreadyExists = plugin.createHelpCode("Location already exists");
+  public String getPermission() {
+    return this.mapPerm.getPermission();
   }
 
   enum Type {
