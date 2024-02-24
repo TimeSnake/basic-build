@@ -9,9 +9,10 @@ import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.basic.bukkit.util.world.ExWorldType;
 import de.timesnake.database.util.server.DbBuildServer;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.GameRule;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class BuildWorldManager extends WorldManager {
+
+  private final Logger logger = LogManager.getLogger("build.world-manager");
 
   @Override
   public ExWorld createWorld(String name, ExWorldType type, boolean temporary) {
@@ -35,14 +38,13 @@ public class BuildWorldManager extends WorldManager {
       WorldSyncResult result = Server.getNetwork().exportAndSyncWorld(Server.getName(), worldName, Path.of("build"));
 
       if (!result.isSuccessful()) {
-        Loggers.WORLDS.warning("Error while exporting world " + worldName + ", " +
-            ((WorldSyncResult.Fail) result).getReason());
+        this.logger.warn("Error while exporting world '{}': {}", worldName, ((WorldSyncResult.Fail) result).getReason());
         return null;
       }
 
       world = this.createWorldFromFile(worldName);
 
-      Loggers.WORLDS.info("Exported world " + worldName);
+      this.logger.info("Exported world " + worldName);
     }
 
     if (world == null) {
@@ -71,18 +73,17 @@ public class BuildWorldManager extends WorldManager {
               worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
 
       if (!result.isSuccessful()) {
-        Loggers.WORLDS.warning("Error while exporting world " + worldName + ", " +
-            ((WorldSyncResult.Fail) result).getReason());
+        this.logger.warn("Error while exporting world {}: {}", worldName, ((WorldSyncResult.Fail) result).getReason());
         return null;
       }
 
       clonedWorld = this.createWorldFromFile(worldName);
 
-      Loggers.WORLDS.info("Exported world " + worldName);
+      this.logger.info("Exported world '{}'", worldName);
     }
 
     if (clonedWorld == null) {
-      return clonedWorld;
+      return null;
     }
 
     this.setBuildRules(clonedWorld);
