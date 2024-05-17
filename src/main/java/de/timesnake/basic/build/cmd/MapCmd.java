@@ -21,12 +21,14 @@ import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.Material;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +40,17 @@ public class MapCmd implements CommandListener {
 
   private final File templateWorldDir;
 
-  private final Code mapPerm = Plugin.BUILD.createPermssionCode("exbuild.map");
+  private final Code perm = Plugin.BUILD.createPermssionCode("exbuild.map");
+  private final Code locationsPerm = Plugin.BUILD.createPermssionCode("exbuild.map.locations");
+  private final Code updatePerm = Plugin.BUILD.createPermssionCode("exbuild.map.update");
+  private final Code authorPerm = Plugin.BUILD.createPermssionCode("exbuild.map.author");
+  private final Code showLocPerm = Plugin.BUILD.createPermssionCode("exbuild.map.showloc");
+  private final Code propertyPerm = Plugin.BUILD.createPermssionCode("exbuild.map.property");
+  private final Code namePerm = Plugin.BUILD.createPermssionCode("exbuild.map.name");
+  private final Code playersPerm = Plugin.BUILD.createPermssionCode("exbuild.map.players");
+  private final Code itemPerm = Plugin.BUILD.createPermssionCode("exbuild.map.item");
+  private final Code descriptionPerm = Plugin.BUILD.createPermssionCode("exbuild.map.description");
+
   private final Code mapNotExists = Plugin.BUILD.createHelpCode("Map not exists");
   private final Code locationAlreadyExists = Plugin.BUILD.createHelpCode("Location already exists");
 
@@ -47,56 +59,137 @@ public class MapCmd implements CommandListener {
   }
 
   @Override
-  public void onCommand(Sender sender, PluginCommand cmd,
-      Arguments<Argument> args) {
-
-    if (!sender.isPlayer(true)) {
-      return;
-    }
-
-    User user = sender.getUser();
-
-    if (!sender.hasPermission(this.mapPerm)) {
-      return;
-    }
-
-    if (!args.isLengthHigherEquals(1, true)) {
-      return;
-    }
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    sender.isPlayerElseExit(true);
+    sender.hasPermissionElseExit(this.perm);
+    args.isLengthHigherEqualsElseExit(1, true);
 
     String gameName = args.getString(0).toLowerCase();
-
     if (!Database.getGames().getGamesName().contains(gameName)) {
       sender.sendMessageGameNotExist(gameName);
       return;
     }
 
     DbGame game = Database.getGames().getGame(gameName);
-
-    if (!args.isLengthHigherEquals(2, true)) {
+    if (game == null) {
+      sender.sendMessageGameNotExist(gameName);
       return;
     }
 
-    String mapName = args.getString(1);
+    args.isLengthHigherEqualsElseExit(2, true);
 
+    String mapName = args.getString(1);
     if (!game.containsMap(mapName)) {
+      if (args.isLengthHigherEquals(3, false) && args.get(2).equalsIgnoreCase("create")) {
+        this.handleCreateCmd(sender, game, args, mapName);
+        return;
+      }
+
       sender.sendMessageNotExist(mapName, this.mapNotExists, "Map");
       return;
     }
 
     DbMap map = game.getMap(mapName);
-
-    if (!args.isLengthHigherEquals(3, true)) {
+    if (map == null) {
+      sender.sendMessageNotExist(mapName, this.mapNotExists, "Map");
       return;
     }
 
+    args.isLengthHigherEqualsElseExit(3, true);
+
+    User user = sender.getUser();
+
     switch (args.getString(2).toLowerCase()) {
-      case "add", "set" -> this.handleLocationCmd(sender, user, args, map);
-      case "update" -> this.handleUpdateCmd(sender, game, map);
-      case "author" -> this.handleAuthorCmd(sender, args, map);
-      case "show_loc" -> this.handleShowLocCmd(sender, args, map);
+      case "add", "set" -> {
+        sender.hasPermissionElseExit(this.locationsPerm);
+        this.handleLocationCmd(sender, user, args, map);
+      }
+      case "update" -> {
+        sender.hasPermissionElseExit(this.updatePerm);
+        this.handleUpdateCmd(sender, game, map);
+      }
+      case "author" -> {
+        sender.hasPermissionElseExit(this.authorPerm);
+        this.handleAuthorCmd(sender, args, map);
+      }
+      case "show_loc" -> {
+        sender.hasPermissionElseExit(this.showLocPerm);
+        this.handleShowLocCmd(sender, args, map);
+      }
+      case "property" -> {
+        sender.hasPermissionElseExit(this.propertyPerm);
+        this.handlePropertyCmd(sender, args, map);
+      }
+      case "name" -> {
+        sender.hasPermissionElseExit(this.namePerm);
+        this.handNameCmd(sender, args, map);
+      }
+      case "players" -> {
+        sender.hasPermissionElseExit(this.playersPerm);
+        this.handPlayersCmd(sender, args, map);
+      }
+      case "item" -> {
+        sender.hasPermissionElseExit(this.itemPerm);
+        this.handleItemCmd(sender, args, map);
+      }
+      case "description" -> {
+        sender.hasPermissionElseExit(this.descriptionPerm);
+        this.handleDescriptionCmd(sender, args, map);
+      }
     }
 
+  }
+
+  private void handleDescriptionCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    sender.sendPluginTDMessage("§wNot implemented yet");
+    // TODO set map description
+  }
+
+  private void handleItemCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    args.isLengthEqualsElseExit(4, true);
+
+    Material material = args.get(3).toMaterialOrExit(true);
+    map.setItemName(material.name());
+
+    sender.sendPluginTDMessage("§sUpdated item of map §v" + map.getName() + "§s to §v" + material.name());
+  }
+
+  private void handPlayersCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    args.isLengthEqualsElseExit(5, true);
+
+    int minPlayers = args.get(3).toBoundedIntOrExit(0, 64, true);
+    int maxPlayers = args.get(4).toBoundedIntOrExit(0, 64, true);
+
+
+    map.setMinPlayers(minPlayers);
+    map.setMaxPlayers(maxPlayers);
+
+    sender.sendPluginTDMessage("§sUpdated players of map §v" + map.getName() + "§s to §v" + minPlayers + " - " + maxPlayers);
+  }
+
+  private void handleCreateCmd(Sender sender, DbGame game, Arguments<Argument> args, String mapName) {
+    game.addMap(mapName);
+    sender.sendPluginTDMessage("§sCreated map §v" + mapName);
+  }
+
+  private void handNameCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    args.isLengthHigherEqualsElseExit(4, true);
+
+    Tuple<String, Integer> collapsed = args.collapse(3);
+    String name = collapsed.getA();
+
+    map.setDisplayName(name);
+    sender.sendPluginTDMessage("§pUpdated name of map §v" + map.getName() + "§s to §v" + name);
+  }
+
+  private void handlePropertyCmd(Sender sender, Arguments<Argument> args, DbMap map) {
+    args.isLengthEqualsElseExit(5, true);
+
+    String key = args.getString(3).toLowerCase();
+    String value = args.getString(4);
+
+    map.setProperty(key, value);
+    sender.sendPluginTDMessage("§sUpdated property §v" + key + "§s of map §v" + map.getName() + "§s to §v" + value);
   }
 
   private void handleShowLocCmd(Sender sender, Arguments<Argument> args, DbMap map) {
@@ -110,13 +203,25 @@ public class MapCmd implements CommandListener {
     if (this.mapLocDisplays.get(world) == null) {
       List<HoloDisplay> displays = new LinkedList<>();
       for (Map.Entry<Integer, DbLocation> entry : map.getMapLocations().entrySet()) {
+        String text = String.valueOf(entry.getKey());
         try {
-          HoloDisplay display = new HoloDisplay(Server.getExLocationFromDbLocation(entry.getValue()),
-              List.of(String.valueOf(entry.getKey())));
+          ExLocation location = Server.getExLocationFromDbLocation(entry.getValue());
+          Optional<HoloDisplay> displayAtSameLoc = displays.stream()
+              .filter(d -> d.getLocation().equals(location))
+              .findFirst();
+
+          if (displayAtSameLoc.isPresent()) {
+            HoloDisplay display = displayAtSameLoc.get();
+            displays.remove(display);
+            Server.getEntityManager().unregisterEntity(display);
+            text = display.getText().get(0) + ", " + text;
+          }
+
+          HoloDisplay display = new HoloDisplay(location, List.of(text));
           displays.add(display);
           Server.getEntityManager().registerEntity(display);
         } catch (WorldNotExistException e) {
-          sender.sendPluginTDMessage("§wWorld §v" + map.getWorldName() + "§w not found for location §v" + entry.getKey());
+          sender.sendPluginTDMessage("§wWorld §v" + map.getWorldName() + "§w not found for location §v" + text);
         }
       }
       this.mapLocDisplays.put(world, displays);
@@ -149,20 +254,22 @@ public class MapCmd implements CommandListener {
       gameType = "game";
     }
 
-    File worldTemplateDirectory = new File(
-        this.templateWorldDir.getAbsolutePath() + File.separator + gameType +
-            File.separator + gameName + File.separator + worldName);
+    File worldTemplateDirectory = new File(this.templateWorldDir.getAbsolutePath()
+                                           + File.separator + gameType
+                                           + File.separator + gameName
+                                           + File.separator + worldName);
 
     try {
       FileUtils.deleteDirectory(worldTemplateDirectory);
-      Server.getWorldManager()
-          .copyWorldFolderFiles(worldDirectory.toPath().toRealPath().toFile(),
-              worldTemplateDirectory);
+      boolean result = Server.getWorldManager().copyWorldFolderFiles(worldDirectory.toPath().toRealPath().toFile(),
+          worldTemplateDirectory);
+
+      if (!result) {
+        sender.sendPluginTDMessage("§wFailed to update world §v" + worldName);
+        return;
+      }
     } catch (IOException e) {
-      e.printStackTrace();
-      sender.sendPluginMessage(
-          Component.text("Error while updating world ", ExTextColor.WARNING)
-              .append(Component.text(worldName, ExTextColor.VALUE)));
+      sender.sendPluginTDMessage("§wError while updating world §v" + worldName);
       Server.getWorldManager().createWorld(worldName);
       return;
     }
@@ -185,6 +292,11 @@ public class MapCmd implements CommandListener {
 
     Type type = Type.fromString(typeName);
 
+    if (type == null) {
+      sender.sendPluginTDMessage("§wType not exists");
+      return;
+    }
+
     if (!args.get(4).isInt(true)) {
       return;
     }
@@ -195,8 +307,7 @@ public class MapCmd implements CommandListener {
 
     DbLocation dbLoc = switch (type) {
       case BLOCK -> Server.getDbLocationFromLocation(loc.zeroBlock().zeroFacing());
-      case BLOCK_FACING -> Server.getDbLocationFromLocation(
-          user.getExLocation().zeroBlock().roundFacing());
+      case BLOCK_FACING -> Server.getDbLocationFromLocation(user.getExLocation().zeroBlock().roundFacing());
       case EXACT -> Server.getDbLocationFromLocation(user.getExLocation().zeroFacing());
       case EXACT_FACING -> Server.getDbLocationFromLocation(user.getExLocation().roundFacing());
       case EXACT_EXACT_FACING -> user.getDbLocation();
@@ -211,17 +322,11 @@ public class MapCmd implements CommandListener {
           return;
         }
         map.setLocation(number, dbLoc);
-        sender.sendPluginMessage(Component.text("Added location ", ExTextColor.PERSONAL)
-            .append(Component.text(number, ExTextColor.VALUE))
-            .append(Component.text(" to map ", ExTextColor.PERSONAL))
-            .append(Component.text(map.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sAdded location §v" + number + "§s to map §v" + map.getName());
       }
       case "set" -> {
         map.setLocation(number, dbLoc);
-        sender.sendPluginMessage(Component.text("Updated location ", ExTextColor.PERSONAL)
-            .append(Component.text(number, ExTextColor.VALUE))
-            .append(Component.text(" to map ", ExTextColor.PERSONAL))
-            .append(Component.text(map.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sUpdated location §v" + number + "§s to map §v" + map.getName());
       }
     }
   }
@@ -236,38 +341,45 @@ public class MapCmd implements CommandListener {
     switch (args.get(3).toLowerCase()) {
       case "add" -> {
         map.addAuthor(author.getUniqueId());
-        sender.sendPluginMessage(Component.text("Added author ", ExTextColor.PERSONAL)
-            .append(Component.text(author.getName(), ExTextColor.VALUE))
-            .append(Component.text("to map ", ExTextColor.PERSONAL))
-            .append(Component.text(map.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sAdded author §v" + author.getName() + "§s to map §v" + map.getName());
       }
       case "remove" -> {
         map.removeAuthor(author.getUniqueId());
-        sender.sendPluginMessage(Component.text("Removed author ", ExTextColor.PERSONAL)
-            .append(Component.text(author.getName(), ExTextColor.VALUE))
-            .append(Component.text("from map ", ExTextColor.PERSONAL))
-            .append(Component.text(map.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sRemoved author §v" + author.getName() + "§s from map §v" + map.getName());
       }
     }
   }
 
   @Override
   public Completion getTabCompletion() {
-    return new Completion(this.mapPerm)
+    return new Completion(this.perm)
         .addArgument(Completion.ofGameNames()
             .addArgument(new Completion(((sender, cmd, args) -> Completion.ofMapNames(args.getString(0))
-                .complete(sender, new PluginCommand(cmd, sender.getPlugin()), args, args.length())))
-                .addArgument(new Completion("update", "show_loc"))
-                .addArgument(new Completion("add", "set")
+                .completeFirst(sender, cmd, args)))
+                .addArgument(new Completion(this.showLocPerm, "show_loc"))
+                .addArgument(new Completion(this.updatePerm, "update"))
+                .addArgument(new Completion(this.locationsPerm, "add", "set")
                     .addArgument(new Completion(Type.getNames())))
-                .addArgument(new Completion("author")
+                .addArgument(new Completion(this.authorPerm, "author")
                     .addArgument(new Completion("add", "remove")
-                        .addArgument(Completion.ofPlayerNames())))));
+                        .addArgument(Completion.ofPlayerNames())))
+                .addArgument(new Completion(this.namePerm, "name")
+                    .addArgument(new Completion("<name>")))
+                .addArgument(new Completion(this.descriptionPerm, "description")
+                    .addArgument(new Completion("<description>")))
+                .addArgument(new Completion(this.itemPerm, "item")
+                    .addArgument(new Completion("<material>")))
+                .addArgument(new Completion(this.playersPerm, "players")
+                    .addArgument(new Completion("<min>")
+                        .addArgument(new Completion("<max>"))))
+                .addArgument(new Completion(this.propertyPerm, "property")
+                    .addArgument(new Completion("<key>")
+                        .addArgument(new Completion("<value>"))))));
   }
 
   @Override
   public String getPermission() {
-    return this.mapPerm.getPermission();
+    return this.perm.getPermission();
   }
 
   enum Type {
