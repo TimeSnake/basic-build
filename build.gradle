@@ -30,6 +30,8 @@ repositories {
 }
 
 dependencies {
+  implementation "de.timesnake:library-waitinggame:1.+"
+
   compileOnly "de.timesnake:basic-bukkit:3.+"
 
   compileOnly "de.timesnake:database-bukkit:2.+"
@@ -52,6 +54,8 @@ dependencies {
 configurations.configureEach {
   resolutionStrategy.dependencySubstitution {
     if (project.parent != null) {
+      substitute module("de.timesnake:library-waitinggame") using project(":library-waitinggame")
+
       substitute module("de.timesnake:basic-bukkit") using project(":basic-bukkit")
 
       substitute module("de.timesnake:database-bukkit") using project(":database-bukkit")

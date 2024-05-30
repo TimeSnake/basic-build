@@ -12,6 +12,7 @@ import de.timesnake.basic.build.server.EventManager;
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.database.util.Database;
+import de.timesnake.library.waitinggames.WaitingGameCreateCmd;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BasicBuild extends JavaPlugin {
@@ -38,6 +39,10 @@ public class BasicBuild extends JavaPlugin {
     new EventManager();
 
     BuildServerManager.getInstance().onBuildEnable();
+
+    Server.getCommandManager().addCommand(this, "wgc",
+        new WaitingGameCreateCmd(BuildServerManager.getInstance().getWaitingGameManager()),
+        de.timesnake.library.waitinggames.Plugin.WAITING_GAME);
   }
 
   @Override
