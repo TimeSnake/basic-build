@@ -9,7 +9,6 @@ import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.world.ExWorld;
 import de.timesnake.basic.bukkit.util.world.ExWorldType;
 import de.timesnake.database.util.server.DbBuildServer;
-import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.WorldSyncResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +43,7 @@ public class BuildWorldManager extends WorldManager {
 
       world = this.createWorldFromFile(worldName);
 
-      this.logger.info("Exported world " + worldName);
+      this.logger.info("Exported world {}", worldName);
     }
 
     if (world == null) {
@@ -57,8 +56,8 @@ public class BuildWorldManager extends WorldManager {
   }
 
   @Override
-  public @Nullable ExWorld cloneWorld(String name, ExWorld exWorld) {
-    ExWorld clonedWorld = super.cloneWorld(name, exWorld);
+  public @Nullable ExWorld cloneWorld(String cloneName, ExWorld originalWorld) {
+    ExWorld clonedWorld = super.cloneWorld(cloneName, originalWorld);
 
     if (clonedWorld == null || clonedWorld.getName().equals("world")) {
       return clonedWorld;
@@ -68,9 +67,7 @@ public class BuildWorldManager extends WorldManager {
 
     if (!Files.isSymbolicLink(clonedWorld.getWorldFolder().toPath())) {
       this.unloadWorld(clonedWorld, false);
-      WorldSyncResult result = Server.getNetwork()
-          .exportAndSyncWorld(Server.getName(),
-              worldName, Path.of("build", NetworkUtils.DEFAULT_DIRECTORY));
+      WorldSyncResult result = Server.getNetwork().exportAndSyncWorld(Server.getName(), worldName, Path.of("build"));
 
       if (!result.isSuccessful()) {
         this.logger.warn("Error while exporting world {}: {}", worldName, ((WorldSyncResult.Fail) result).getReason());
