@@ -16,7 +16,7 @@ repositories {
   mavenLocal()
   mavenCentral()
   maven {
-    url 'https://papermc.io/repo/repository/maven-public/'
+    url "https://repo.papermc.io/repository/maven-public/"
   }
   maven {
     url "https://git.timesnake.de/api/v4/groups/7/-/packages/maven"
@@ -48,7 +48,7 @@ dependencies {
   compileOnly "de.timesnake:library-basic:1.+"
   compileOnly "de.timesnake:library-chat:1.+"
 
-  paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
+  paperweight.paperDevBundle("1.21-R0.1-SNAPSHOT")
 }
 
 configurations.configureEach {
@@ -75,9 +75,7 @@ configurations.configureEach {
   }
 }
 
-tasks.assemble {
-  dependsOn(reobfJar)
-}
+
 
 tasks.register('exportAsPlugin', Copy) {
   from "$buildDir/libs/${archivesBaseName}-${project.version}.jar"
@@ -116,3 +114,5 @@ tasks.withType(JavaCompile).configureEach {
 java {
   withSourcesJar()
 }
+
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.getMOJANG_PRODUCTION()
