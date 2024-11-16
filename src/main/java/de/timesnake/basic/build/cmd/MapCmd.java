@@ -21,6 +21,7 @@ import de.timesnake.database.util.game.DbMap;
 import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.DbLocation;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
@@ -245,13 +246,13 @@ public class MapCmd implements CommandListener {
 
     Server.getWorldManager().unloadWorld(world, true);
 
-    String gameType;
     String gameName = game.getInfo().getName();
 
+    String gameType;
     if (game instanceof DbTmpGame) {
-      gameType = "tempgame";
+      gameType = ServerType.TEMP_GAME.getShortName();
     } else {
-      gameType = "game";
+      gameType = ServerType.GAME.getShortName();
     }
 
     File worldTemplateDirectory = new File(this.templateWorldDir.getAbsolutePath()
