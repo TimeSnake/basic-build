@@ -1,5 +1,5 @@
 main: de.timesnake.basic.build.main.BasicBuild
-version: 1.3.0
+version: ${version}
 name: basic-build
 author: timesnake
 depend: [ basic-bukkit ]
