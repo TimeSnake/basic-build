@@ -4,7 +4,6 @@
 
 package de.timesnake.basic.build.main;
 
-import de.timesnake.basic.build.chat.Plugin;
 import de.timesnake.basic.build.cmd.MapCmd;
 import de.timesnake.basic.build.cmd.PvPCmd;
 import de.timesnake.basic.build.server.BuildServerManager;
@@ -12,6 +11,7 @@ import de.timesnake.basic.build.server.EventManager;
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.database.util.Database;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.waitinggames.WaitingGameCreateCmd;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -33,7 +33,7 @@ public class BasicBuild extends JavaPlugin {
     plugin = this;
 
     Server.getCommandManager().addCommand(this, "map",
-        new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()), Plugin.BUILD);
+        new MapCmd(Database.getNetwork().getNetworkFile("templates").getFile()), BuildServerManager.PLUGIN);
     Server.getCommandManager().addCommand(this, "pvp", new PvPCmd(), Plugin.SERVER);
 
     new EventManager();
@@ -41,8 +41,7 @@ public class BasicBuild extends JavaPlugin {
     BuildServerManager.getInstance().onBuildEnable();
 
     Server.getCommandManager().addCommand(this, "wgc",
-        new WaitingGameCreateCmd(BuildServerManager.getInstance().getWaitingGameManager()),
-        de.timesnake.library.waitinggames.Plugin.WAITING_GAME);
+        new WaitingGameCreateCmd(BuildServerManager.getInstance().getWaitingGameManager()), Plugin.SERVER);
   }
 
   @Override
