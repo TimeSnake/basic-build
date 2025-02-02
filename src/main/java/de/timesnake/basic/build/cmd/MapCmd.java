@@ -4,7 +4,7 @@
 
 package de.timesnake.basic.build.cmd;
 
-import de.timesnake.basic.build.chat.Plugin;
+import de.timesnake.basic.build.server.BuildServerManager;
 import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.chat.cmd.Argument;
 import de.timesnake.basic.bukkit.util.chat.cmd.CommandListener;
@@ -41,19 +41,19 @@ public class MapCmd implements CommandListener {
 
   private final File templateWorldDir;
 
-  private final Code perm = Plugin.BUILD.createPermssionCode("exbuild.map");
-  private final Code locationsPerm = Plugin.BUILD.createPermssionCode("exbuild.map.locations");
-  private final Code updatePerm = Plugin.BUILD.createPermssionCode("exbuild.map.update");
-  private final Code authorPerm = Plugin.BUILD.createPermssionCode("exbuild.map.author");
-  private final Code showLocPerm = Plugin.BUILD.createPermssionCode("exbuild.map.showloc");
-  private final Code propertyPerm = Plugin.BUILD.createPermssionCode("exbuild.map.property");
-  private final Code namePerm = Plugin.BUILD.createPermssionCode("exbuild.map.name");
-  private final Code playersPerm = Plugin.BUILD.createPermssionCode("exbuild.map.players");
-  private final Code itemPerm = Plugin.BUILD.createPermssionCode("exbuild.map.item");
-  private final Code descriptionPerm = Plugin.BUILD.createPermssionCode("exbuild.map.description");
+  private final Code perm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map");
+  private final Code locationsPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.locations");
+  private final Code updatePerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.update");
+  private final Code authorPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.author");
+  private final Code showLocPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.showloc");
+  private final Code propertyPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.property");
+  private final Code namePerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.name");
+  private final Code playersPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.players");
+  private final Code itemPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.item");
+  private final Code descriptionPerm = BuildServerManager.PLUGIN.createPermssionCode("exbuild.map.description");
 
-  private final Code mapNotExists = Plugin.BUILD.createHelpCode("Map not exists");
-  private final Code locationAlreadyExists = Plugin.BUILD.createHelpCode("Location already exists");
+  private final Code mapNotExists = BuildServerManager.PLUGIN.createHelpCode("Map not exists");
+  private final Code locationAlreadyExists = BuildServerManager.PLUGIN.createHelpCode("Location already exists");
 
   public MapCmd(File templateDir) {
     this.templateWorldDir = new File(templateDir.getAbsolutePath() + File.separator + "worlds");

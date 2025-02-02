@@ -8,11 +8,14 @@ import de.timesnake.basic.bukkit.util.ServerManager;
 import de.timesnake.basic.bukkit.util.world.WorldManager;
 import de.timesnake.database.util.server.DbBuildServer;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.waitinggames.WaitingGameManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 
 public class BuildServerManager extends ServerManager {
+
+  public static final Plugin PLUGIN = new de.timesnake.library.chat.Plugin("Build", "XBL");
 
   public static BuildServerManager getInstance() {
     return (BuildServerManager) ServerManager.getInstance();
