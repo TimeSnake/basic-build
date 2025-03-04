@@ -355,8 +355,7 @@ public class MapCmd implements CommandListener {
   public Completion getTabCompletion() {
     return new Completion(this.perm)
         .addArgument(Completion.ofGameNames()
-            .addArgument(new Completion(((sender, cmd, args) -> Completion.ofMapNames(args.getString(0))
-                .completeFirst(sender, cmd, args)))
+            .addArgument(new Completion((sender, cmd, args) -> Completion.ofMapNames(args.getString(0)).completeFirst(sender, cmd, args))
                 .addArgument(new Completion(this.showLocPerm, "show_loc"))
                 .addArgument(new Completion(this.updatePerm, "update"))
                 .addArgument(new Completion(this.locationsPerm, "add", "set")
@@ -365,17 +364,17 @@ public class MapCmd implements CommandListener {
                     .addArgument(new Completion("add", "remove")
                         .addArgument(Completion.ofPlayerNames())))
                 .addArgument(new Completion(this.namePerm, "name")
-                    .addArgument(new Completion("<name>")))
+                    .addArgument(new Completion("<name>").allowAny()))
                 .addArgument(new Completion(this.descriptionPerm, "description")
-                    .addArgument(new Completion("<description>")))
+                    .addArgument(new Completion("<description>").allowAny()))
                 .addArgument(new Completion(this.itemPerm, "item")
-                    .addArgument(new Completion("<material>")))
+                    .addArgument(new Completion("<material>").allowAny()))
                 .addArgument(new Completion(this.playersPerm, "players")
-                    .addArgument(new Completion("<min>")
-                        .addArgument(new Completion("<max>"))))
+                    .addArgument(new Completion("<min>").allowAny()
+                        .addArgument(new Completion("<max>").allowAny())))
                 .addArgument(new Completion(this.propertyPerm, "property")
-                    .addArgument(new Completion("<key>")
-                        .addArgument(new Completion("<value>"))))));
+                    .addArgument(new Completion("<key>").allowAny()
+                        .addArgument(new Completion("<value>").allowAny())))));
   }
 
   @Override
